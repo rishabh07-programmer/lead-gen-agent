@@ -38,12 +38,15 @@ Return ONLY valid JSON, no markdown fences, no preamble, with exactly this struc
 """
 
     response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-sonnet-5",
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
     )
 
-    text = response.content[0].text.strip()
+    text_block = next((block for block in response.content if block.type == "text"), None)
+    if text_block is None:
+        raise ValueError(f"No text block found in response. Content: {response.content}")
+    text = text_block.text.strip()
     if text.startswith("```"):
         text = text.strip("`")
         if text.startswith("json"):
@@ -53,4 +56,4 @@ Return ONLY valid JSON, no markdown fences, no preamble, with exactly this struc
     try:
         return json.loads(text)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse email writer response as JSON: {e}\n\nRaw response:\n{response.content[0].text}")
+        raise ValueError(f"Failed to parse email writer response as JSON: {e}\n\nRaw response:\n{text_block.text}")

@@ -1,1 +1,530 @@
-<h1>Lead Gen Agent</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Gen Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0D0E10;
+    --surface: #161719;
+    --surface-alt: #1C1D20;
+    --border: #26272B;
+    --text: #EDEDEF;
+    --muted: #8A8F98;
+    --accent: #5E6AD2;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    margin: 0 0 40px;
+    font-size: 15px;
+  }
+
+  .lead-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.2);
+  }
+
+  .submit-row {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .generate-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: box-shadow 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+  }
+
+  .generate-btn:hover:not(:disabled) {
+    box-shadow: 0 0 0 4px rgba(94, 106, 210, 0.18);
+  }
+
+  .generate-btn:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+
+  .generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .progress-bar-track {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 24px;
+    display: none;
+  }
+
+  .progress-bar-track.active {
+    display: block;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    width: 30%;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: indeterminate 1.3s ease-in-out infinite;
+  }
+
+  @keyframes indeterminate {
+    0%   { transform: translateX(-100%); }
+    50%  { transform: translateX(200%); }
+    100% { transform: translateX(400%); }
+  }
+
+  .status-phrase {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 14px;
+    min-height: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .status-phrase.visible {
+    opacity: 1;
+  }
+
+  .error-message {
+    display: none;
+    margin-top: 24px;
+    background: rgba(220, 80, 80, 0.1);
+    border: 1px solid rgba(220, 80, 80, 0.35);
+    color: #E5A0A0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+  .error-message.visible {
+    display: block;
+  }
+
+  .results-header {
+    display: none;
+    justify-content: flex-end;
+    margin-top: 40px;
+    margin-bottom: 16px;
+  }
+
+  .results-header.visible {
+    display: flex;
+  }
+
+  .export-btn {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .export-btn:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.15);
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .lead-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .lead-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .company-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .website-link {
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: none;
+    word-break: break-all;
+  }
+
+  .website-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+    width: 100%;
+  }
+
+  .email-label {
+    font-size: 13px;
+    margin: 0 0 8px;
+  }
+
+  .email-label strong {
+    font-weight: 600;
+  }
+
+  .email-body {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-wrap;
+    max-height: 220px;
+    overflow-y: auto;
+    margin: 0;
+  }
+
+  .copy-btn {
+    align-self: flex-start;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .copy-btn.copied {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  @media (max-width: 700px) {
+    .lead-form {
+      grid-template-columns: 1fr;
+    }
+    .cards-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Lead Gen Agent</h1>
+  <p class="subtitle">Find real businesses and generate personalized outreach emails.</p>
+
+  <form class="lead-form" id="leadForm">
+    <div class="field">
+      <label for="industry">Industry</label>
+      <input type="text" id="industry" placeholder="e.g. dental clinics" required>
+    </div>
+    <div class="field">
+      <label for="location">Location</label>
+      <input type="text" id="location" placeholder="e.g. Austin, TX" required>
+    </div>
+    <div class="field">
+      <label for="role">Target Role</label>
+      <input type="text" id="role" placeholder="e.g. practice owner" required>
+    </div>
+    <div class="submit-row">
+      <button type="submit" class="generate-btn" id="generateBtn">Generate Leads</button>
+    </div>
+  </form>
+
+  <div class="progress-bar-track" id="progressTrack">
+    <div class="progress-bar-fill"></div>
+  </div>
+  <div class="status-phrase" id="statusPhrase"></div>
+
+  <div class="error-message" id="errorMessage"></div>
+
+  <div class="results-header" id="resultsHeader">
+    <button class="export-btn" id="exportBtn">Export CSV</button>
+  </div>
+
+  <div class="cards-grid" id="cardsGrid"></div>
+</div>
+
+<script>
+  const API_URL = 'http://127.0.0.1:8000/api/generate-leads';
+  const STATUS_PHRASES = [
+    'Researching leads...',
+    'Analyzing business fit...',
+    'Writing personalized emails...',
+    'Almost done...'
+  ];
+
+  const form = document.getElementById('leadForm');
+  const generateBtn = document.getElementById('generateBtn');
+  const progressTrack = document.getElementById('progressTrack');
+  const statusPhrase = document.getElementById('statusPhrase');
+  const errorMessage = document.getElementById('errorMessage');
+  const resultsHeader = document.getElementById('resultsHeader');
+  const cardsGrid = document.getElementById('cardsGrid');
+  const exportBtn = document.getElementById('exportBtn');
+
+  let currentLeads = [];
+  let statusInterval = null;
+
+  function startStatusCycle() {
+    let i = 0;
+    statusPhrase.textContent = STATUS_PHRASES[0];
+    statusPhrase.classList.add('visible');
+    statusInterval = setInterval(() => {
+      statusPhrase.classList.remove('visible');
+      setTimeout(() => {
+        i = (i + 1) % STATUS_PHRASES.length;
+        statusPhrase.textContent = STATUS_PHRASES[i];
+        statusPhrase.classList.add('visible');
+      }, 300);
+    }, 2000);
+  }
+
+  function stopStatusCycle() {
+    if (statusInterval) {
+      clearInterval(statusInterval);
+      statusInterval = null;
+    }
+    statusPhrase.classList.remove('visible');
+  }
+
+  function setLoading(isLoading) {
+    generateBtn.disabled = isLoading;
+    progressTrack.classList.toggle('active', isLoading);
+    if (isLoading) {
+      startStatusCycle();
+    } else {
+      stopStatusCycle();
+    }
+  }
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.classList.add('visible');
+  }
+
+  function hideError() {
+    errorMessage.classList.remove('visible');
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+  }
+
+  function renderCards(leads) {
+    cardsGrid.innerHTML = '';
+
+    leads.forEach((lead, index) => {
+      const card = document.createElement('div');
+      card.className = 'lead-card';
+      card.innerHTML = `
+        <h3 class="company-name">${escapeHtml(lead.company_name)}</h3>
+        <a class="website-link" href="${escapeHtml(lead.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(lead.website)}</a>
+        <p class="description">${escapeHtml(lead.description)}</p>
+        <hr class="divider">
+        <div>
+          <p class="email-label"><strong>Email:</strong> ${escapeHtml(lead.email_subject)}</p>
+          <pre class="email-body">${escapeHtml(lead.email_body)}</pre>
+        </div>
+        <button class="copy-btn" data-index="${index}">Copy Email</button>
+      `;
+      cardsGrid.appendChild(card);
+
+      setTimeout(() => {
+        card.classList.add('visible');
+      }, index * 150);
+    });
+
+    resultsHeader.classList.add('visible');
+  }
+
+  cardsGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.copy-btn');
+    if (!btn) return;
+
+    const lead = currentLeads[Number(btn.dataset.index)];
+    const text = `${lead.email_subject}\n\n${lead.email_body}`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  });
+
+  function csvEscape(value) {
+    const str = String(value ?? '');
+    if (/[",\n]/.test(str)) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+
+  function exportCsv() {
+    const headers = ['company_name', 'website', 'location', 'contact_hint', 'email_subject', 'email_body'];
+    const rows = currentLeads.map(lead => headers.map(h => csvEscape(lead[h])).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'leads.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  exportBtn.addEventListener('click', exportCsv);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+    resultsHeader.classList.remove('visible');
+    cardsGrid.innerHTML = '';
+    currentLeads = [];
+    setLoading(true);
+
+    const payload = {
+      industry: document.getElementById('industry').value,
+      location: document.getElementById('location').value,
+      role: document.getElementById('role').value
+    };
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+
+      const data = await res.json();
+      currentLeads = data.leads || [];
+      setLoading(false);
+      renderCards(currentLeads);
+    } catch (err) {
+      setLoading(false);
+      showError(`Failed to generate leads: ${err.message}`);
+    }
+  });
+</script>
+</body>
+</html>
